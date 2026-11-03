@@ -142,9 +142,9 @@ end
 
 # ── internals ──────────────────────────────────────────────────────────────
 
-plain(value::JSON3.Object) =
+plain(value::AbstractDict) =
     Dict{String,Any}(String(k) => plain(v) for (k, v) in pairs(value))
-plain(value::JSON3.Array) = Any[plain(v) for v in value]
+plain(value::AbstractVector) = Any[plain(v) for v in value]
 plain(value) = value
 
 _field(env::Dict{String,Any}, key, default = nothing) = get(env, String(key), default)
@@ -224,7 +224,7 @@ end
 function _json(args, op, timeout)
     text = _run(args, op, timeout)
     parsed = try
-        JSON3.read(text)
+        JSON.parse(text)
     catch err
         throw(
             MmpropsError(

@@ -1,7 +1,7 @@
 #!/usr/bin/env julia
 """A faithful fake of the `mmprops` CLI for client tests."""
 
-using JSON3
+using JSON
 
 const MODE = get(ENV, "FAKE_MMPROPS_MODE", "ok")
 
@@ -10,7 +10,7 @@ opt(args, name) = begin
     i === nothing ? nothing : (i < length(args) ? args[i + 1] : nothing)
 end
 
-emit(obj) = (println(JSON3.write(obj)); 0)
+emit(obj) = (println(JSON.json(obj)); 0)
 
 function main(args)
     if "--version" in args

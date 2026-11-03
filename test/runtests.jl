@@ -1,8 +1,14 @@
 using Test
 using MMProps
+using JSON
+using Preferences
 
 const FAKE = joinpath(@__DIR__, "fake_mmprops.jl")
 const ROOT = dirname(@__DIR__)
+# `Pkg.test` copies the package into a temporary depot, so `ROOT` may point
+# outside the test environment. Prefer the active project so the shim can
+# resolve `MMProps` and `JSON` wherever the tests actually run.
+const TEST_PROJECT = something(Base.active_project(), joinpath(ROOT, "Project.toml"))
 const SHIM_DIR = mktempdir()
 
 function make_shim()
@@ -10,7 +16,7 @@ function make_shim()
     julia = joinpath(Sys.BINDIR, Base.julia_exename())
     open(shim, "w") do io
         println(io, "#!/bin/sh")
-        println(io, "exec '$(julia)' --startup-file=no --project='$(ROOT)' '$(FAKE)' \"\$@\"")
+        println(io, "exec '$(julia)' --startup-file=no --project='$(TEST_PROJECT)' '$(FAKE)' \"\$@\"")
     end
     chmod(shim, 0o755)
     return shim
@@ -147,6 +153,16 @@ end
         @test err isa MmpropsError && err.kind == :binary_not_found
 
         @test find_binary(SHIM) == SHIM
+
+        # The preference set by `set_binary_path` takes precedence over `MMPROPS_BIN`.
+        @test set_binary_path(SHIM) == SHIM
+        try
+            @test withenv("MMPROPS_BIN" => missing) do
+                find_binary()
+            end == SHIM
+        finally
+            Preferences.delete_preferences!("MMProps", "binary_path")
+        end
     end
 
     let bin = get(ENV, "MMPROPS_BIN", nothing)

@@ -6,7 +6,8 @@ package only runs its public JSON command line and parses the result.
 
 module MMProps
 
-using JSON3
+using JSON
+using Preferences
 
 export PropertyResult,
     VleResult,
@@ -20,6 +21,7 @@ export PropertyResult,
     db_props,
     db_pack,
     db_show,
+    set_binary_path,
     find_binary,
     engine_version
 
