@@ -161,7 +161,7 @@ end
                 find_binary()
             end == SHIM
         finally
-            Preferences.delete_preferences!("MMProps", "binary_path")
+            Preferences.delete_preferences!("MMProps", "binary_path"; force = true)
         end
     end
 
